@@ -99,7 +99,7 @@ var escRE = /[\\"\u0000-\u001F\u2028\u2029]/g;
 
 
 
-function stringify(value) {
+function stringify(value, seen) {
 	if (value == null) {
 		return 'null';
 	}
@@ -110,23 +110,34 @@ function stringify(value) {
 		return value.toString();
 	}
 	else if (typeof value === 'object') {
+		seen = seen || new WeakSet();
+		if (seen.has(value)) {
+			throw new TypeError('Converting circular structure to JSON');
+		}
+		seen.add(value);
+		var res;
 		if (typeof value.toJSON === 'function') {
-			return stringify(value.toJSON());
+			res = stringify(value.toJSON(), seen);
 		}
 		else if (isArray(value)) {
-			var res = '[';
+			res = '[';
 			for (var i = 0; i < value.length; i++)
-				res += (i ? ',' : '') + stringify(value[i]);
-			return res + ']';
+				res += (i ? ',' : '') + stringify(value[i], seen);
+			res += ']';
 		}
 		else if (toString.call(value) === '[object Object]') {
 			var tmp = [];
 			for (var k in value) {
 				if (value.hasOwnProperty(k))
-					tmp.push(stringify(k) + ':' + stringify(value[k]));
+					tmp.push(stringify(k, seen) + ':' + stringify(value[k], seen));
 			}
-			return '{' + tmp.join(',') + '}';
+			res = '{' + tmp.join(',') + '}';
 		}
+		else {
+			res = '"' + value.toString().replace(escRE, escFunc) + '"';
+		}
+		seen.delete(value);
+		return res;
 	}
 	return '"' + value.toString().replace(escRE, escFunc) + '"';
 };
