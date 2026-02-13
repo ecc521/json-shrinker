@@ -1,14 +1,22 @@
 import { stringify } from '../src/index';
 
 describe('Circular Reference DoS', () => {
-    test('demonstrate circular reference vulnerability', () => {
+    test('throws TypeError on circular reference by default', () => {
         const circularObj: any = {};
         circularObj.self = circularObj;
 
-        // We expect this NOT to throw an error (i.e. handle circular refs gracefully)
-        // Currently, this will fail with RangeError: Maximum call stack size exceeded
+        // Expect TypeError: Converting circular structure to JSON
         expect(() => {
             stringify(circularObj);
-        }).not.toThrow();
+        }).toThrow(TypeError);
+    });
+
+    test('omits circular reference when removeCircular option is true', () => {
+        const circularObj: any = { a: 1 };
+        circularObj.self = circularObj;
+
+        // Should return {"a":1} and omit "self"
+        const result = stringify(circularObj, { removeCircular: true });
+        expect(result).toBe('{"a":1}');
     });
 });

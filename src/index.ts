@@ -42,6 +42,7 @@ export interface ShrinkOptions {
     removeUndefined?: boolean;
     removeNull?: boolean;
     precision?: number;
+    removeCircular?: boolean;
 }
 
 export function shrinkNumber(num: number): string {
@@ -83,7 +84,7 @@ const escFunc = function (m: string): string {
 
 const escRE = /[\\"\u0000-\u001F\u2028\u2029]/g;
 
-export function stringify(value: any, options?: ShrinkOptions): string {
+export function stringify(value: any, options?: ShrinkOptions, stack: any[] = []): string {
     if (value == null) {
         return 'null';
     } else if (typeof value === 'number') {
@@ -95,12 +96,26 @@ export function stringify(value: any, options?: ShrinkOptions): string {
     } else if (typeof value === 'boolean') {
         return value.toString();
     } else if (typeof value === 'object') {
+        if (stack.indexOf(value) !== -1) {
+             if (options && options.removeCircular) {
+                 return 'undefined'; // This needs to be handled by caller to actually remove key
+             }
+             throw new TypeError("Converting circular structure to JSON");
+        }
+        stack.push(value);
+
         if (typeof value.toJSON === 'function') {
-            return stringify(value.toJSON(), options);
+            const res = stringify(value.toJSON(), options, stack);
+            stack.pop();
+            return res;
         } else if (Array.isArray(value)) {
             let res = '[';
-            for (let i = 0; i < value.length; i++)
-                res += (i ? ',' : '') + stringify(value[i], options);
+            for (let i = 0; i < value.length; i++) {
+                let str = stringify(value[i], options, stack);
+                if (str === 'undefined') str = 'null'; // Arrays can't have missing indices
+                res += (i ? ',' : '') + str;
+            }
+            stack.pop();
             return res + ']';
         } else if (Object.prototype.toString.call(value) === '[object Object]') {
             let tmp = [];
@@ -115,11 +130,16 @@ export function stringify(value: any, options?: ShrinkOptions): string {
                         continue;
                     }
 
-                    tmp.push(stringify(k, options) + ':' + stringify(v, options));
+                    const str = stringify(v, options, stack);
+                    if (str !== 'undefined') {
+                        tmp.push(stringify(k, options, stack) + ':' + str);
+                    }
                 }
             }
+            stack.pop();
             return '{' + tmp.join(',') + '}';
         }
+        stack.pop();
     }
     return '"' + value.toString().replace(escRE, escFunc) + '"';
 }
