@@ -1,6 +1,6 @@
 function shrinkNumber(num) {	
 	//Remove plus from 1e+21
-	let exponential = num.toExponential().split("+").join("")
+	let exponential = num.toExponential().replace(/\+/g, "")
 	let str = num.toString()
 	
 	let shorterExpo = toShorterVersion(num)
@@ -37,7 +37,7 @@ function toShorterVersion(num) {
 	if (str.includes("e")) {
 		//Ideally we would still be able to parse these.
 		//Remove the + if present - plus is inferred.
-		return str.split("+").join("")
+		return str.replace(/\+/g, "")
 	}
 	
 	//Has to be greater than or equal to 1000 to be able to save space
