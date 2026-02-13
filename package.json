@@ -5,6 +5,9 @@
   "license": "MIT",
   "repository": "ecc521/json-shrinker",
   "main": "minify.js",
+  "scripts": {
+    "test": "node test.js"
+  },
   "keywords": [
     "json",
     "minify",
