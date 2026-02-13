@@ -1,4 +1,4 @@
-import { stringify, shrinkNumber, shrinkJSON, verifiedStringify, verifiedShrinkJSON } from '../src/index';
+import { stringify, shrinkNumber, shrinkJSON } from '../src/index';
 
 describe('JSON Shrinker', () => {
   describe('Basic Types', () => {
@@ -113,12 +113,6 @@ describe('JSON Shrinker', () => {
       });
   });
 
-  describe('verifiedStringify', () => {
-      test('verifies output', () => {
-          expect(verifiedStringify({a:1000})).toBe('{"a":1e3}');
-      });
-  });
-
   describe('Options', () => {
     test('removeUndefined: true', () => {
       expect(stringify({a: undefined}, {removeUndefined: true})).toBe('{}');
@@ -139,14 +133,5 @@ describe('JSON Shrinker', () => {
       expect(stringify({a: 10.1234}, {precision: 2})).toBe('{"a":10.12}');
     });
 
-    test('verifiedStringify with lossy options', () => {
-        // Should return the shrunk version even if it differs from native
-        // Native: {"a":null}
-        // Shrunk (removeNull): {}
-        expect(verifiedStringify({a: null}, {removeNull: true})).toBe('{}');
-
-        // Precision
-        expect(verifiedStringify({a: 1.23456}, {precision: 2})).toBe('{"a":1.23}');
-    });
   });
 });

@@ -124,29 +124,6 @@ export function stringify(value: any, options?: ShrinkOptions): string {
     return '"' + value.toString().replace(escRE, escFunc) + '"';
 }
 
-export function verifiedStringify(value: any, options?: ShrinkOptions): string {
-    let shrunk = stringify(value, options);
-    let native = JSON.stringify(value);
-
-    // If lossy options are used, native comparison might fail.
-    // We check if options are "lossy".
-    // precision: lossy.
-    // removeNull: lossy (native keeps null).
-    // removeUndefined: matches native behavior (native removes undefined).
-    const isLossy = options && (options.precision !== undefined || options.removeNull);
-
-    if (!isLossy) {
-        if (JSON.stringify(JSON.parse(shrunk)) !== native || shrunk.length > native.length) {
-            return native;
-        }
-    }
-    return shrunk;
-}
-
 export function shrinkJSON(str: string, options?: ShrinkOptions): string {
     return stringify(JSON.parse(str), options);
-}
-
-export function verifiedShrinkJSON(str: string, options?: ShrinkOptions): string {
-    return verifiedStringify(JSON.parse(str), options);
 }

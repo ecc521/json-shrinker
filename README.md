@@ -87,13 +87,6 @@ Stringifies a JavaScript value, applying shrinking techniques.
 ### `shrinkJSON(jsonString: string, options?: ShrinkOptions): string`
 Parses a JSON string and re-stringifies it with shrinking.
 
-### `verifiedStringify(value: any, options?: ShrinkOptions): string`
-Stringifies the value and verifies that it is valid JSON and smaller than standard `JSON.stringify`.
-**Note:** Verification of correctness against `JSON.stringify` is disabled if lossy options are used.
-
-### `verifiedShrinkJSON(jsonString: string, options?: ShrinkOptions): string`
-Same as `verifiedStringify` but takes a JSON string as input.
-
 ## License
 
 MIT
