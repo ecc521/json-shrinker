@@ -1,6 +1,6 @@
 {
   "name": "json-shrinker",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Minify JSON by removing whitespace and using scientific notation for numbers.",
   "license": "MIT",
   "repository": "ecc521/json-shrinker",
