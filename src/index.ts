@@ -85,6 +85,9 @@ const escFunc = function (m: string): string {
 const escRE = /[\\"\u0000-\u001F\u2028\u2029]/g;
 
 export function stringify(value: any, options?: ShrinkOptions, stack: any[] = []): string {
+    if (typeof value === 'bigint') {
+        throw new TypeError("Do not know how to serialize a BigInt");
+    }
     if (value == null) {
         return 'null';
     } else if (typeof value === 'number') {
@@ -108,7 +111,25 @@ export function stringify(value: any, options?: ShrinkOptions, stack: any[] = []
             const res = stringify(value.toJSON(), options, stack);
             stack.pop();
             return res;
-        } else if (Array.isArray(value)) {
+        }
+
+        if (value instanceof Number) {
+             const res = stringify(value.valueOf(), options, stack);
+             stack.pop();
+             return res;
+        }
+        if (value instanceof String) {
+             const res = stringify(value.valueOf(), options, stack);
+             stack.pop();
+             return res;
+        }
+        if (value instanceof Boolean) {
+             const res = stringify(value.valueOf(), options, stack);
+             stack.pop();
+             return res;
+        }
+
+        if (Array.isArray(value)) {
             let res = '[';
             for (let i = 0; i < value.length; i++) {
                 let str = stringify(value[i], options, stack);
@@ -117,7 +138,7 @@ export function stringify(value: any, options?: ShrinkOptions, stack: any[] = []
             }
             stack.pop();
             return res + ']';
-        } else if (Object.prototype.toString.call(value) === '[object Object]') {
+        } else {
             let tmp = [];
             for (let k in value) {
                 if (Object.prototype.hasOwnProperty.call(value, k)) {
@@ -139,7 +160,6 @@ export function stringify(value: any, options?: ShrinkOptions, stack: any[] = []
             stack.pop();
             return '{' + tmp.join(',') + '}';
         }
-        stack.pop();
     }
     return '"' + value.toString().replace(escRE, escFunc) + '"';
 }
